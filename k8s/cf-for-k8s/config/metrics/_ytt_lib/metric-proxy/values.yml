@@ -1,0 +1,7 @@
+#@data/values
+---
+system_domain: ""
+system_namespace: ""
+
+images:
+  metric_proxy: "oratos/metric-proxy@sha256:266be9306a2cb1aa862b382bdc5b029e000efd25aa8c0ceab3fffa66cf6ab512"

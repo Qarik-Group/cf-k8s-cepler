@@ -1,0 +1,13 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.8.0
+directories:
+- path: k8s
+  contents:
+  - path: cf-for-k8s
+    git:
+      url: https://github.com/cloudfoundry/cf-for-k8s
+      ref: bbedae0530fdf105be4510172868542572548c2e
+    includePaths:
+    - config/**/*
