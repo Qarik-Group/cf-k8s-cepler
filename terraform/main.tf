@@ -14,7 +14,7 @@ module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google"
   version = "11.1.0"
   project_id             = local.project
-  name                   =local.cluster_name
+  name                   = local.cluster_name
   regional               = true
   region                 = local.region
   network                = google_compute_network.vpc.name
@@ -23,4 +23,15 @@ module "gke" {
   ip_range_services      = local.svc_range_name
   create_service_account = false
   service_account        = google_service_account.cluster_service_account.email
+
+ node_pools = [
+    {
+      name            = "pool-01"
+      machine_type      = "e2-standard-4"
+      min_count       = 2
+      max_count       = 3
+      service_account = google_service_account.cluster_service_account.email
+      auto_upgrade    = true
+    },
+  ]
 }
