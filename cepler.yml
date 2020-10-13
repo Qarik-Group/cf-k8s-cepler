@@ -1,0 +1,4 @@
+environments:
+  testflight:
+    latest:
+    - k8s/**/*
