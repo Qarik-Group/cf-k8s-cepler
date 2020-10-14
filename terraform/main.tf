@@ -1,7 +1,7 @@
 locals {
   cluster_name = "cf-on-k8s"
-  project       = "cf-on-k8s-cepler"
-  region        = "europe-west3"
+  project      = "cf-on-k8s-cepler"
+  region       = "europe-west3"
 }
 
 provider "google" {
@@ -11,8 +11,8 @@ provider "google" {
 }
 
 module "gke" {
-  source  = "terraform-google-modules/kubernetes-engine/google"
-  version = "11.1.0"
+  source                 = "terraform-google-modules/kubernetes-engine/google"
+  version                = "11.1.0"
   project_id             = local.project
   name                   = local.cluster_name
   regional               = true
@@ -24,11 +24,11 @@ module "gke" {
   create_service_account = false
   service_account        = google_service_account.cluster_service_account.email
 
- node_pools = [
+  node_pools = [
     {
       name            = "pool-01"
-      machine_type      = "e2-standard-4"
-      min_count       = 2
+      machine_type    = "e2-standard-4"
+      min_count       = 1
       max_count       = 3
       service_account = google_service_account.cluster_service_account.email
       auto_upgrade    = true

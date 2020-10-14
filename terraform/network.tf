@@ -2,7 +2,7 @@ locals {
   pods_range_name     = "${local.cluster_name}-pods"
   svc_range_name      = "${local.cluster_name}-svc"
   cluster_network_tag = local.cluster_name
-  network_prefix = "10.1"
+  network_prefix      = "10.1"
 }
 
 resource google_compute_network "vpc" {
