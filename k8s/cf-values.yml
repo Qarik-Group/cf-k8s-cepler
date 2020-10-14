@@ -163,4 +163,4 @@ app_registry:
   hostname: https://index.docker.io/v1/
   repository_prefix: "bodymindarts"
   username: "bodymindarts"
-  password: "<dummy>"
+  password: #@ data.values.secrets.docker_password
