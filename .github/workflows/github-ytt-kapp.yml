@@ -38,4 +38,4 @@ jobs:
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       env:
         KAPP_KUBECONFIG_YAML: '{"apiVersion":"v1","clusters":[{"cluster":{"certificate-authority-data":"${{ secrets.TESTFLIGHT_CA }}","server":"https://35.234.79.186"},"name":"testflight"}],"contexts":[{"context":{"cluster":"testflight","user":"testflight-user"},"name":"testflight"}],"current-context":"testflight","kind":"Config","preferences":{},"users":[{"name":"testflight-user","user":{"token":"${{ secrets.TESTFLIGHT_TOKEN }}"}}]}'
-      run: kapp deploy -f rendered.yml -a testflight
+      run: kapp -y deploy -f rendered.yml -a testflight
