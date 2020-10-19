@@ -12,7 +12,7 @@ jobs:
     - id: prepare-cepler
       uses: bodymindarts/cepler-action@main
       with:
-        config_path: examples/github-ytt-kapp/cepler.yml
+        config_path: cepler.yml
         environment: testflight
         prepare: true
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
