@@ -23,6 +23,7 @@ module "gke" {
   ip_range_services      = local.svc_range_name
   create_service_account = false
   service_account        = google_service_account.cluster_service_account.email
+  zones = ["${local.region}-a"]
 
   node_pools = [
     {
