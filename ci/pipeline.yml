@@ -1,0 +1,83 @@
+jobs:
+- name: testflight
+  serial: true
+  plan:
+  - get: testflight
+    trigger: true
+  - do:
+    - task: render-secrets
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: bodymindarts/cepler-templates
+            tag: 0.1.0
+        outputs:
+        - name: secrets
+        params:
+          SECRETS:
+            app_registry:
+              password: ((dockerhub.password))
+        run:
+          path: sh
+          args:
+          - -c
+          - |
+            cat <<EOF > secrets/values.yml
+            #@data/values
+            #@ load("@ytt:overlay", "overlay")
+            #@overlay/match-child-defaults missing_ok=True
+            ---
+            ${SECRETS}
+    - task: process
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: bodymindarts/cepler-templates
+            tag: 0.1.0
+        inputs:
+        - name: testflight
+          path: repo
+        - name: secrets
+        outputs:
+        - name: process
+        run:
+          dir: repo
+          path: sh
+          args:
+          - -c
+          - ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f ../secrets/values.yml > ../process/rendered.yml
+  - put: testflight-out
+    params:
+      repository: repo
+resources:
+- name: testflight
+  type: cepler-in
+  source:
+    uri: git@github.com:bodymindarts/cf-k8s-cepler
+    branch: main
+    private_key: ((github.private_key))
+    environment: testflight
+    config: cepler.yml
+- name: testflight-out
+  type: cepler-in
+  source:
+    uri: git@github.com:bodymindarts/cf-k8s-cepler
+    branch: main
+    private_key: ((github.private_key))
+    environment: testflight
+    config: cepler.yml
+resource_types:
+- name: cepler-in
+  type: registry-image
+  source:
+    repository: cepler/cepler-concourse-resource
+    tag: 0.4.5
+- name: cepler-out
+  type: registry-image
+  source:
+    repository: cepler/cepler-concourse-resource
+    tag: 0.4.5

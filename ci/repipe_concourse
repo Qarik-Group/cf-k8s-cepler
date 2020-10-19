@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker run -v $(pwd):/workspace/inputs -it bodymindarts/cepler-templates:latest process > ci/pipeline.yml
+fly -t bucc set-pipeline -p cf-for-k8s -c ci/pipeline.yml

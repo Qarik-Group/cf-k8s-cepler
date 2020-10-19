@@ -1,0 +1,6 @@
+#!/bin/bash
+
+workflows_dir=.github/workflows
+mkdir -p ${workflows_dir}
+docker run -v $(pwd):/workspace/inputs -it bodymindarts/cepler-templates:latest process > ${workflows_dir}/github-ytt-kapp.yml
+
