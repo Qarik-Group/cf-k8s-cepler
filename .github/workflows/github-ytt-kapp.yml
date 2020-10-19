@@ -22,9 +22,7 @@ jobs:
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       name: render-secrets
       env:
-        SECRETS:
-          app_regitsry:
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        SECRETS: '{"app_registry":{"password":"${{ secrets.DOCKERHUB_PASSWORD }}"}}'
       run: |
         cat <<EOF > secrets.yml
         #@data/values
