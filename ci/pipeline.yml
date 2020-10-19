@@ -50,6 +50,42 @@ jobs:
           args:
           - -c
           - ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f ../secrets/values.yml > ../process/rendered.yml
+  - do:
+    - task: deploy-testflight
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: bodymindarts/cepler-templates
+            tag: 0.1.0
+        inputs:
+        - name: process
+        params:
+          KAPP_KUBECONFIG_YAML:
+            apiVersion: v1
+            kind: Config
+            preferences: {}
+            clusters:
+            - name: testflight
+              cluster:
+                certificate-authority-data: ((testflight.ca_cert))
+                server: https://35.234.79.186
+            users:
+            - name: testflight-user
+              user:
+                token: ((testflight.token))
+            contexts:
+            - name: testflight
+              context:
+                cluster: testflight
+                user: testflight-user
+            current-context: testflight
+        run:
+          path: sh
+          args:
+          - -c
+          - kapp -y deploy -f process/rendered.yml -a testflight
   - put: testflight-out
     params:
       repository: repo
@@ -57,16 +93,16 @@ resources:
 - name: testflight
   type: cepler-in
   source:
-    uri: git@github.com:bodymindarts/cf-k8s-cepler
-    branch: main
+    uri: git@github.com:starkandwayne/cf-k8s-cepler
+    branch: master
     private_key: ((github.private_key))
     environment: testflight
     config: cepler.yml
 - name: testflight-out
   type: cepler-in
   source:
-    uri: git@github.com:bodymindarts/cf-k8s-cepler
-    branch: main
+    uri: git@github.com:starkandwayne/cf-k8s-cepler
+    branch: master
     private_key: ((github.private_key))
     environment: testflight
     config: cepler.yml

@@ -1,0 +1,40 @@
+cepler:
+  config: cepler.yml
+
+# driver:
+#   type: github
+#   repo:
+#     access_token: ${{ secrets.ACCESS_TOKEN }}
+#     branch: master
+#   secrets:
+#     app_registry:
+#       password: ${{ secrets.DOCKERHUB_PASSWORD }}
+driver:
+  type: concourse
+  secrets:
+    app_registry:
+      password: ((dockerhub.password))
+  repo:
+    uri: "git@github.com:starkandwayne/cf-k8s-cepler"
+    private_key: ((github.private_key))
+    branch: master
+
+
+processor:
+  type: ytt
+  # debug: true
+  files:
+  - k8s/cf-for-k8s/config
+  - k8s/cf-values.yml
+
+executor:
+  type: kapp
+  environments:
+    testflight:
+      app_name: testflight
+      # ca_cert: ${{ secrets.TESTFLIGHT_CA }}
+      ca_cert: ((testflight.ca_cert))
+      namespace: testflight
+      server: https://35.234.79.186
+      # token: ${{ secrets.TESTFLIGHT_TOKEN }}
+      token: ((testflight.token))
