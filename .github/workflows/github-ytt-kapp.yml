@@ -1,13 +1,39 @@
-ytt: Error: 
-- cannot load github/base.lib.yml: 
-    in <toplevel>
-      base.yml:2 | #@ load("github/base.lib.yml", "github")
-
-    reason:
-     - cannot load ytt.lib.yml: 
-         in <toplevel>
-           github/base.lib.yml:1 | #@ load("ytt.lib.yml", "ytt_processor")
-     
-         reason:
-          - got else, want primary expression
-              github/ytt.lib.yml:5 | #@     return "ytt -f " + " -f ".join(files) + " > rendered.yml"
+name: cepler-deploy
+"on":
+- push
+jobs:
+  deploy-testflight:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: main
+        fetch-depth: 0
+    - id: prepare-cepler
+      uses: bodymindarts/cepler-action@main
+      with:
+        config_path: examples/github-ytt-kapp/cepler.yml
+        environment: testflight
+        prepare: true
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      uses: k14s/setup-k14s-action@v1
+      with:
+        only: ytt, kapp
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      name: render-secrets
+      env:
+        SECRETS:
+          app_regitsry:
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        cat <<EOF > secrets.yml
+        #@data/values
+        #@ load("@ytt:overlay", "overlay")
+        #@overlay/match-child-defaults missing_ok=True
+        ---
+        secrets: ${SECRETS}
+        EOF
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      run: ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f secrets.yml > rendered.yml
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      run: cat rendered.yml
