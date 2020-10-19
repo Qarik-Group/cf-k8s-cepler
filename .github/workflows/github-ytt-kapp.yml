@@ -7,7 +7,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: main
+        ref: master
         fetch-depth: 0
     - id: prepare-cepler
       uses: bodymindarts/cepler-action@main
