@@ -34,8 +34,6 @@ jobs:
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       run: ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f secrets.yml > rendered.yml
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
-      run: cat rendered.yml
-    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       id: deploy-testflight
       env:
         KAPP_KUBECONFIG_YAML: '{"apiVersion":"v1","clusters":[{"cluster":{"certificate-authority-data":"${{ secrets.TESTFLIGHT_CA }}","server":"https://35.234.79.186"},"name":"testflight"}],"contexts":[{"context":{"cluster":"testflight","user":"testflight-user"},"name":"testflight"}],"current-context":"testflight","kind":"Config","preferences":{},"users":[{"name":"testflight-user","user":{"token":"${{ secrets.TESTFLIGHT_TOKEN }}"}}]}'
@@ -51,5 +49,5 @@ jobs:
       name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GH_TOKEN }}
+        github_token: ${{ secrets.ACCESS_TOKEN }}
         branch: master
