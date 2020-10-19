@@ -29,7 +29,7 @@ jobs:
         #@ load("@ytt:overlay", "overlay")
         #@overlay/match-child-defaults missing_ok=True
         ---
-        secrets: ${SECRETS}
+        ${SECRETS}
         EOF
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       run: ytt -f k8s/cf-values.yml -f secrets.yml > rendered.yml
