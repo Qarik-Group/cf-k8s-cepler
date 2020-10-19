@@ -32,6 +32,6 @@ jobs:
         ${SECRETS}
         EOF
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
-      run: ytt -f k8s/cf-values.yml -f secrets.yml > rendered.yml
+      run: ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f secrets.yml > rendered.yml
     - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
       run: cat rendered.yml
