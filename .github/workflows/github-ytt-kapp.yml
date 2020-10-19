@@ -9,6 +9,7 @@ jobs:
       with:
         ref: master
         fetch-depth: 0
+        persist-credentials: false
     - id: prepare-cepler
       uses: bodymindarts/cepler-action@main
       with:
