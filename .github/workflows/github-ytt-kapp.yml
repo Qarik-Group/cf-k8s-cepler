@@ -1,13 +1,41 @@
-ytt: Error: 
-- cannot load github/base.lib.yml: 
-    in <toplevel>
-      base.yml:2 | #@ load("github/base.lib.yml", "github")
-
-    reason:
-     - cannot load kapp.lib.yml: 
-         in <toplevel>
-           github/base.lib.yml:2 | #@ load("kapp.lib.yml", "kapp_task")
-     
-         reason:
-          - mismatched set of block openings (if/else/elif/for/def) and closing (end)
-              github/kapp.lib.yml:28 | #@ def kapp_task(env_name, kapp_config):
+name: cepler-deploy
+"on":
+- push
+jobs:
+  deploy-testflight:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: master
+        fetch-depth: 0
+    - id: prepare-cepler
+      uses: bodymindarts/cepler-action@main
+      with:
+        config_path: cepler.yml
+        environment: testflight
+        prepare: true
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      uses: k14s/setup-k14s-action@v1
+      with:
+        only: ytt, kapp
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      name: render-secrets
+      env:
+        SECRETS: '{"app_registry":{"password":"${{ secrets.DOCKERHUB_PASSWORD }}"}}'
+      run: |
+        cat <<EOF > secrets.yml
+        #@data/values
+        #@ load("@ytt:overlay", "overlay")
+        #@overlay/match-child-defaults missing_ok=True
+        ---
+        ${SECRETS}
+        EOF
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      run: ytt -f k8s/cf-for-k8s/config -f k8s/cf-values.yml -f secrets.yml > rendered.yml
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      run: cat rendered.yml
+    - if: ${{ steps.prepare-cepler.outputs.needs_deploying == 'true' }}
+      env:
+        KAPP_KUBECONFIG_YAML: '{"apiVersion":"v1","clusters":[{"cluster":{"certificate-authority-data":"${{ secrets.TESTFLIGHT_CA }}","server":"https://35.234.79.186"},"name":"testflight"}],"contexts":[{"context":{"cluster":"testflight","user":"testflight-user"},"name":"testflight"}],"current-context":"testflight","kind":"Config","preferences":{},"users":[{"name":"testflight-user","user":{"token":"${{ secrets.TESTFLIGHT_TOKEN }}"}}]}'
+      run: kapp deploy -f rendered.yml -a testflight
