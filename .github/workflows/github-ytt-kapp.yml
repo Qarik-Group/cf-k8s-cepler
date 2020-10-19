@@ -1,0 +1,13 @@
+ytt: Error: 
+- cannot load github/base.lib.yml: 
+    in <toplevel>
+      base.yml:2 | #@ load("github/base.lib.yml", "github")
+
+    reason:
+     - cannot load ytt.lib.yml: 
+         in <toplevel>
+           github/base.lib.yml:1 | #@ load("ytt.lib.yml", "ytt_processor")
+     
+         reason:
+          - got else, want primary expression
+              github/ytt.lib.yml:5 | #@     return "ytt -f " + " -f ".join(files) + " > rendered.yml"
