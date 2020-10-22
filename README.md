@@ -22,7 +22,7 @@ First we will clone the [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
 ```
 $ git clone https://github.com/cloudfoundry/cf-for-k8s && cd cf-for-k8s
 $ git checkout v1.0.0
-$ ./hack/generate-values.sh -d <your-dns-endpoint> cf-values.yml
+$ ./hack/generate-values.sh -d <your-dns-endpoint> > cf-values.yml
 ```
 
 Then we will create a new repository to store the files needed to deploy cf-for-k8s.
@@ -59,7 +59,7 @@ $ git add . && git commit -m 'Sync cf-for-k8s config files'
 
 Now we need to add the values we generated in the previous step and append some dockerhub credentials to it. Don't actually add your password here, that will be injected via the github secrets meachnism.
 ```
-$ cp ../cf-values.yml ./k8s/
+$ cp ../cf-for-k8s/cf-values.yml ./k8s/
 cat <<EOF >> k8s/cf-values.yml
 app_registry:
   hostname: https://index.docker.io/v1/
@@ -81,6 +81,7 @@ environments:
     passed: testflight
     propagated:
     - k8s/**/*
+    - k8s/cf-values.yml
 EOF
 $ cat <<EOF > ci.yml
 cepler:
@@ -107,12 +108,12 @@ executor:
     testflight:
       app_name: testflight-cf
       ca_cert: ${{ secrets.TESTFLIGHT_CA }}
-      server: ${{ secrets.TESTFLIGHT_SERVER
+      server: ${{ secrets.TESTFLIGHT_SERVER }}
       token: ${{ secrets.TESTFLIGHT_TOKEN }}
     staging:
       app_name: staging-cf
       ca_cert: ${{ secrets.STAGING_CA }}
-      server: ${{ secrets.STAGING_SERVER
+      server: ${{ secrets.STAGING_SERVER }}
       token: ${{ secrets.STAGING_TOKEN }}
 EOF
 $ git add . && git commit -m 'Add cepler.yml and ci.yml'
@@ -124,7 +125,7 @@ The `ci.yml` tells the `cepler-templates` processor how the CD pipeline should b
 
 ## Secrets
 
-Now go to https://github.com/<your-github-org>/cf-k8s-cepler/settings/secrets andd add the following secrets:
+Now go to https://github.com/your-github-org/cf-k8s-cepler/settings/secrets and add the following secrets:
 - `DOCKERHUB_PASSWORD` - password to signin to dockerhub
 - `ACCESS_TOKEN` - a personal access token that can push to this repository. You can create one under https://github.com/settings/tokens.
 - `TESTFLIGHT_SERVER` - the endpoint of the `testflight` kubernetes cluster.
@@ -137,17 +138,18 @@ To gain access we also need a token from a service account that has the required
 $ kubectl config set-context <cluster>
 $ kubectl apply -f https://raw.githubusercontent.com/starkandwayne/cf-k8s-cepler/master/deployer-account.yml
 $ secret_name=$(kubectl get serviceaccount cf-deployer -o json | jq -r '.secrets[0].name')
-$ kubectl get secrets $(secret_name) -o json | jq -r '.data.token' | base64 --decode
+$ kubectl get secrets ${secret_name} -o json | jq -r '.data.token' | base64 --decode
 <token>
 ```
 Copy the resulting token into the `TESTFLIGHT_TOKEN` and `STAGING_TOKEN` secrets respectivly.
 
-## Configurint github-actions
+## Configuring github-actions
 
 Now everything is in place and we can create our continuous deployment setup:
 ```
 $ workflows_dir=.github/workflows
-$ mkdir -p .github/workflows
+$ mkdir -p ${workflows_dir}
 $ docker run -v $(pwd):/workspace/inputs -it bodymindarts/cepler-templates:0.2.0 > ${workflows_dir}/deploy-cf-environments.yml
 $ git add . && git commit -m 'Add deploy-cf-environments workflow'
+$ git push -u origin master
 ```
