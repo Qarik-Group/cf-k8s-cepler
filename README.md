@@ -57,7 +57,7 @@ $ vendir sync
 $ git add . && git commit -m 'Sync cf-for-k8s config files'
 ```
 
-Now we need to add the values we generated in the previous step and append some dockerhub credentials to it. Don't actually add your password here, that will be injected via the github secrets meachnism.
+Now we need to add the values we generated in the previous step and append some dockerhub credentials to it. Don't actually add your password here, that will be injected via the github secrets mechanism.
 ```
 $ cp ../cf-for-k8s/cf-values.yml ./k8s/
 cat <<EOF >> k8s/cf-values.yml
