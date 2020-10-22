@@ -10,6 +10,16 @@ provider "google" {
   region  = local.region
 }
 
+data google_client_config "default" {
+}
+
+provider "kubernetes" {
+  load_config_file       = false
+  host                   = module.gke.endpoint
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
 module "gke" {
   source                 = "terraform-google-modules/kubernetes-engine/google"
   version                = "11.1.0"

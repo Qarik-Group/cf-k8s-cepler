@@ -51,7 +51,3 @@ data kubernetes_secret "concourse_token" {
     name = kubernetes_service_account.concourse.default_secret_name
   }
 }
-
-output concourse_token {
-  value = data.kubernetes_secret.concourse_token.data.token
-}
