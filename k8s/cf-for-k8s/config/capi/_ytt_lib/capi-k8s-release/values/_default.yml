@@ -18,6 +18,7 @@ ccdb:
   database: cloud_controller
   host: capi-database-postgresql
   password_secret_name:
+  encryption_key_secret_name: capi-database-encryption-key-secret
   port: 5432
   user: cloud_controller
   ca_cert: null
@@ -56,4 +57,5 @@ images:
   cf_autodetect_builder:
   nginx:
   statsd_exporter:
-  package_image_uploader:
+  registry_buddy:
+temporary_disable_v2_staging: true

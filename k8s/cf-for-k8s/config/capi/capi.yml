@@ -1,9 +1,7 @@
-#@ load("@ytt:assert", "assert")
 #@ load("@ytt:data", "data")
 #@ load("@ytt:library", "library")
 #@ load("@ytt:overlay", "overlay")
 #@ load("@ytt:template", "template")
-#@ load("@ytt:yaml", "yaml")
 #@ load("/namespaces.star", "system_namespace", "workloads_namespace", "workloads_staging_namespace")
 
 #@ def capi_host():
@@ -44,6 +42,7 @@ ccdb:
   port: #@ data.values.capi.database.port
   user: #@ data.values.capi.database.user
   password_secret_name: capi-database-password
+  encryption_key_secret_name: capi-database-encryption-key-secret
   database: #@ data.values.capi.database.name
   ca_cert: #@ data.values.capi.database.ca_cert
 
@@ -63,6 +62,12 @@ kpack:
     username: #@ data.values.app_registry.username
     password: #@ data.values.app_registry.password
 #@ end
+
+#! scale down default number of cf-api-server replicas to 1
+#@overlay/match by=overlay.subset({"kind":"Deployment","metadata":{"name":"cf-api-server"}})
+---
+spec:
+  replicas: 1
 
 #@ capi = library.get("capi-k8s-release")
 --- #@ template.replace(capi.with_data_values(capi_values()).eval())
