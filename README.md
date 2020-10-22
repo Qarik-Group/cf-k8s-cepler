@@ -5,7 +5,7 @@ This repository introduces the [cepler-templates](https://github.com/bodymindart
 ## Introduction
 
 Deploying software to multiple environments (such as dev / staging / production) introduces operational complexity that requires explicit managing in order to ensure parity between environments.
-Previously I wrote an [article](https://github.com/starkandwayne/cepler-demo) introducing how you can use [cepler](https://github.com/bodymindarts/cepler) to significantly reduce this overhead (and it is recommended to read that first).
+Previously I wrote an [article](https://www.starkandwayne.com/blog/introducing-cepler/) introducing how you can use [cepler](https://github.com/bodymindarts/cepler) to significantly reduce this overhead (and it is recommended to read that first).
 
 In this article we will use [cepler-templates](https://github.com/bodymindarts/cepler-templates) to automate the execution of the `cepler check`, `cepler prepare`, `cepler record` cycle to deploy [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s) using github actions.
 
