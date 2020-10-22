@@ -160,7 +160,7 @@ Once you have pushed your repo upstream to github an action should be kicked off
 $ git push -u origin master
 ```
 
-You can follow the progress of the triggered workflows here: https://github.com/your-github-org/demo-test/actions
+You can follow the progress of the triggered workflows here: https://github.com/your-github-org/cf-k8s-cepler/actions
 
 If you click on the latest commit you will be able to drop down the `cepler-deploy` workflow.
 There are 2 jobs `deploy-testflight` and `deploy-staging`.
@@ -182,7 +182,7 @@ Fast-forward
  create mode 100644 .cepler/testflight.state
 ```
 
-This commit should in-turn trigger another run of the workflow. You can go back to https://github.com/your-github-org/demo-test/actions and click on the latest commit `[cepler] Updated testflight state` to watch the next deploy.
+This commit should in-turn trigger another run of the workflow. You can go back to https://github.com/your-github-org/cf-k8s-cepler/actions and click on the latest commit `[cepler] Updated testflight state` to watch the next deploy.
 This time the `deploy-testflight` job should complete as a no-op. The `deploy-staging` job should complete succesfully creating another commit.
 
 
