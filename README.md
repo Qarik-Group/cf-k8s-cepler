@@ -141,3 +141,13 @@ $ kubectl get secrets $(secret_name) -o json | jq -r '.data.token' | base64 --de
 <token>
 ```
 Copy the resulting token into the `TESTFLIGHT_TOKEN` and `STAGING_TOKEN` secrets respectivly.
+
+## Configurint github-actions
+
+Now everything is in place and we can create our continuous deployment setup:
+```
+$ workflows_dir=.github/workflows
+$ mkdir -p .github/workflows
+$ docker run -v $(pwd):/workspace/inputs -it bodymindarts/cepler-templates:0.2.0 > ${workflows_dir}/deploy-cf-environments.yml
+$ git add . && git commit -m 'Add deploy-cf-environments workflow'
+```
