@@ -30,7 +30,7 @@ Then we will create a new repository to store the files needed to deploy cf-for-
 - Go to github.com and create a new repository called cf-k8s-cepler.
 ```
 $ cd ..
-$ git clone git@github.com:<github-org>/cf-k8s-cepler.git && cd cf-k8s-cepler
+$ git clone git@github.com:your-github-org/cf-k8s-cepler.git && cd cf-k8s-cepler
 ```
 
 ## Config files
@@ -151,5 +151,41 @@ $ workflows_dir=.github/workflows
 $ mkdir -p ${workflows_dir}
 $ docker run -v $(pwd):/workspace/inputs -it bodymindarts/cepler-templates:0.2.0 > ${workflows_dir}/deploy-cf-environments.yml
 $ git add . && git commit -m 'Add deploy-cf-environments workflow'
+```
+
+## Deployment
+
+Once you have pushed your repo upstream to github an action should be kicked off:
+```
 $ git push -u origin master
 ```
+
+You can follow the progress of the triggered workflows here: https://github.com/your-github-org/demo-test/actions
+
+If you click on the latest commit you will be able to drop down the `cepler-deploy` workflow.
+There are 2 jobs `deploy-testflight` and `deploy-staging`.
+
+The intial run of `deploy-staging` should fail since it depends on `testflight` having been completed succesfully at least once. If you follow the `deploy-testflight` job the deployment should complete correctly and produce an updated cepler state:
+```
+$ git pull
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 4 (delta 1), reused 4 (delta 1), pack-reused 0
+Unpacking objects: 100% (4/4), 5.83 KiB | 2.92 MiB/s, done.
+From github.com:bodymindarts/cf-k8s-cepler
+   b68074a..61d0273  master     -> origin/master
+Updating b68074a..61d0273
+Fast-forward
+ .cepler/testflight.state | 566 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 566 insertions(+)
+ create mode 100644 .cepler/testflight.state
+```
+
+This commit should in-turn trigger another run of the workflow. You can go back to https://github.com/your-github-org/demo-test/actions and click on the latest commit `[cepler] Updated testflight state` to watch the next deploy.
+This time the `deploy-testflight` job should complete as a no-op. The `deploy-staging` job should complete succesfully creating another commit.
+
+
+## Conclusion
+
+From here on any change to the files referenced in the `cepler.yml` file should trigger successive deploys. Hence we have achieved a continous deployment pipeline that deploys cf-for-k8s to successive environments via github actions.
