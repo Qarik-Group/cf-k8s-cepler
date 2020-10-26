@@ -22,7 +22,8 @@ First we will clone the [cf-for-k8s](https://github.com/cloudfoundry/cf-for-k8s)
 ```
 $ git clone https://github.com/cloudfoundry/cf-for-k8s && cd cf-for-k8s
 $ git checkout v1.0.0
-$ ./hack/generate-values.sh -d <your-dns-endpoint> > cf-values.yml
+$ ./hack/generate-values.sh -d <testflight-dns> > testflight-values.yml
+$ ./hack/generate-values.sh -d <staging-dns> > staging-values.yml
 ```
 
 Then we will create a new repository to store the files needed to deploy cf-for-k8s.
@@ -59,15 +60,23 @@ $ git add . && git commit -m 'Sync cf-for-k8s config files'
 
 Now we need to add the values we generated in the previous step and append some dockerhub credentials to it. Don't actually add your password here, that will be injected via the github secrets mechanism.
 ```
-$ cp ../cf-for-k8s/cf-values.yml ./k8s/
-cat <<EOF >> k8s/cf-values.yml
+$ cp ../cf-for-k8s/testflight-values.yml ./k8s/
+cat <<EOF >> k8s/testflight-values.yml
 app_registry:
   hostname: https://index.docker.io/v1/
   repository_prefix: "<dockerhub_username>"
   username: "<dockerhub_username>"
   password: DUMMY
 EOF
-$ git add . && git commit -m 'Add cf-values'
+$ cp ../cf-for-k8s/staging-values.yml ./k8s/
+cat <<EOF >> k8s/staging-values.yml
+app_registry:
+  hostname: https://index.docker.io/v1/
+  repository_prefix: "<dockerhub_username>"
+  username: "<dockerhub_username>"
+  password: DUMMY
+EOF
+$ git add . && git commit -m 'Add environment-values'
 ```
 
 Next we will add a `cepler.yml` and `ci.yml` which are needed to generate the deployment pipeline.
@@ -76,12 +85,14 @@ $ cat <<EOF > cepler.yml
 environments:
   testflight:
     latest:
-    - k8s/**/*
+    - k8s/cf-for-k8s/**/*
+    - k8s/testflight-values.yml
   staging:
     passed: testflight
     propagated:
-    - k8s/**/*
-    - k8s/cf-values.yml
+    - k8s/cf-for-k8s/**/*
+    latest:
+    - k8s/staging-values.yml
 EOF
 $ cat <<EOF > ci.yml
 cepler:
@@ -100,7 +111,7 @@ processor:
   type: ytt
   files:
   - k8s/cf-for-k8s/config
-  - k8s/cf-values.yml
+  - k8s/*.yml
 
 executor:
   type: kapp
@@ -185,7 +196,20 @@ Fast-forward
 This commit should in-turn trigger another run of the workflow. You can go back to https://github.com/your-github-org/cf-k8s-cepler/actions and click on the latest commit `[cepler] Updated testflight state` to watch the next deploy.
 This time the `deploy-testflight` job should complete as a no-op. The `deploy-staging` job should complete succesfully creating another commit.
 
+From here on any change to the files referenced in the `cepler.yml` file should trigger successive deploys. Hence we have achieved a continous deployment pipeline that deploys cf-for-k8s to successive environments via github actions.
 
 ## Conclusion
 
-From here on any change to the files referenced in the `cepler.yml` file should trigger successive deploys. Hence we have achieved a continous deployment pipeline that deploys cf-for-k8s to successive environments via github actions.
+To check that things are working as expected you can findout the external ip of the `istio-ingressgateway` and point your dns entry to it:
+```
+$ kubectl get svc -n istio-system
+NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                                                      AGE
+istio-ingressgateway   LoadBalancer   192.168.77.107   35.246.241.158   15021:31048/TCP,80:30241/TCP,443:30963/TCP,15443:30925/TCP   23m
+istiod                 ClusterIP      192.168.90.225   <none>           15010/TCP,15012/TCP,443/TCP,15014/TCP,853/TCP                23m
+```
+Then once your DNS has been updated run:
+```
+$ cf api api.<testflight-dns> --skip-ssl-validation
+$ cf auth admin `cat k8s/testflight-values.yml | yq -r .cf_admin_password`
+```
+
