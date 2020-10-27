@@ -50,7 +50,7 @@ directories:
   - path: cf-for-k8s
     git:
       url: https://github.com/cloudfoundry/cf-for-k8s
-      ref: 73745a3a9891b0d1ceec646c184b09650c626bdb
+      ref: v1.0.0
     includePaths:
     - config/**/*
 EOF
